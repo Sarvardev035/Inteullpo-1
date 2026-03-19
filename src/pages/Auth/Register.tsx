@@ -5,8 +5,7 @@ import api from '../../api/axios';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [surname, setSurname] = useState('');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,7 +14,7 @@ const Register: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('/auth/register', { name, surname, email, password });
+      await api.post('/auth/register', { fullName, email, password });
       toast.success('Registration successful! Please login.');
       navigate('/login');
     } catch (error: any) {
@@ -32,23 +31,13 @@ const Register: React.FC = () => {
           <h2 className="text-center text-3xl font-extrabold text-gray-900">Create an account</h2>
         </div>
         <form className="mt-8 space-y-4" onSubmit={handleRegister}>
-          <div className="flex space-x-4">
-            <div className="w-1/2">
-              <label className="text-sm font-medium text-gray-700">Name</label>
-              <input
-                type="text" required
-                className="mt-1 appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                value={name} onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div className="w-1/2">
-              <label className="text-sm font-medium text-gray-700">Surname</label>
-              <input
-                type="text" required
-                className="mt-1 appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                value={surname} onChange={(e) => setSurname(e.target.value)}
-              />
-            </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700">Full Name</label>
+            <input
+              type="text" required placeholder="John Doe"
+              className="mt-1 appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              value={fullName} onChange={(e) => setFullName(e.target.value)}
+            />
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700">Email address</label>
