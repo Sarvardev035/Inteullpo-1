@@ -5,9 +5,9 @@ import api from '../../api/axios';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [name, setName] = useState('');
+  const [surname, setSurname] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +15,7 @@ const Register: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('/auth/register', { firstName, lastName, phone, password });
+      await api.post('/auth/register', { name, surname, email, password });
       toast.success('Registration successful! Please login.');
       navigate('/login');
     } catch (error: any) {
@@ -34,28 +34,28 @@ const Register: React.FC = () => {
         <form className="mt-8 space-y-4" onSubmit={handleRegister}>
           <div className="flex space-x-4">
             <div className="w-1/2">
-              <label className="text-sm font-medium text-gray-700">First Name</label>
+              <label className="text-sm font-medium text-gray-700">Name</label>
               <input
                 type="text" required
                 className="mt-1 appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                value={firstName} onChange={(e) => setFirstName(e.target.value)}
+                value={name} onChange={(e) => setName(e.target.value)}
               />
             </div>
             <div className="w-1/2">
-              <label className="text-sm font-medium text-gray-700">Last Name</label>
+              <label className="text-sm font-medium text-gray-700">Surname</label>
               <input
                 type="text" required
                 className="mt-1 appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                value={lastName} onChange={(e) => setLastName(e.target.value)}
+                value={surname} onChange={(e) => setSurname(e.target.value)}
               />
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Phone</label>
+            <label className="text-sm font-medium text-gray-700">Email address</label>
             <input
-              type="text" required placeholder="+998901234567"
+              type="email" required placeholder="example@gmail.com"
               className="mt-1 appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              value={phone} onChange={(e) => setPhone(e.target.value)}
+              value={email} onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div>
