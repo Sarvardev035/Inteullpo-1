@@ -1,8 +1,9 @@
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://finly.uyqidir.uz/api';
+
 const api = axios.create({
-  // Old app intentionally disconnected from live backend.
-  baseURL: 'http://127.0.0.1:65535/api',
+  baseURL: API_BASE_URL,
 });
 
 api.interceptors.request.use(
