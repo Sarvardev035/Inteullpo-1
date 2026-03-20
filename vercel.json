@@ -1,11 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "https://finly.uyqidir.uz/api/$1"
+      "source": "/api/:path*",
+      "destination": "https://finly.uyqidir.uz/api/:path*"
     },
     {
-      "source": "/(.*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
