@@ -99,6 +99,12 @@ h1, h2, h3 {
   animation: pulse-dot 2s infinite;
 }
 
+/* Spin animation for loading spinners */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 4px;

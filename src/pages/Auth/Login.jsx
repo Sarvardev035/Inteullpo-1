@@ -1,230 +1,388 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { toast } from 'react-toastify';
-import api from '../../api/axios';
-import { getErrorMessage } from '../../utils/http';
-import { Button, Input } from '../../components/ui';
-import { pageVariants, listVariants, itemVariants } from '../../utils/animations';
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { authApi } from '../../api/authApi'
 
-const extractToken = (response) => {
-  const data = response?.data;
-  const authHeader = response?.headers?.authorization || response?.headers?.Authorization;
+const Login = () => {
+  const navigate = useNavigate()
+  const [email, setEmail] = useState(
+    localStorage.getItem('rememberedEmail') || ''
+  )
+  const [password, setPassword] = useState('')
+  const [remember, setRemember] = useState(true)
+  const [showPass, setShowPass] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
-  if (typeof data === 'string') return data;
-  if (data?.token) return data.token;
-  if (data?.accessToken) return data.accessToken;
-  if (data?.access_token) return data.access_token;
-  if (data?.jwt) return data.jwt;
-  if (data?.data?.token) return data.data.token;
-  if (data?.data?.accessToken) return data.data.accessToken;
-  if (data?.data?.access_token) return data.data.access_token;
-  if (data?.result?.token) return data.result.token;
-  if (data?.result?.accessToken) return data.result.accessToken;
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    try {
+      const { data } = await authApi.login({ email, password })
+      
+      // Debug logging
+      console.log('✅ Login response:', data)
+      console.log('✅ Response keys:', Object.keys(data))
+      
+      // Try every possible field name the backend might use
+      const token =
+        data.token ||
+        data.accessToken ||
+        data.access_token ||
+        data.jwt ||
+        data.jwtToken ||
+        data.Authorization ||
+        data.data?.token ||
+        data.data?.accessToken ||
+        data.data?.access_token
 
-  if (typeof authHeader === 'string') {
-    return authHeader.startsWith('Bearer ')
-      ? authHeader.slice('Bearer '.length).trim()
-      : authHeader.trim();
+      if (!token) {
+        console.error('Full response was:', data)
+        throw new Error('Token not found in response')
+      }
+
+      localStorage.setItem('token', token)
+      if (remember) localStorage.setItem('rememberedEmail', email)
+      else localStorage.removeItem('rememberedEmail')
+      navigate('/dashboard')
+    } catch (err) {
+      console.error('Login error:', err)
+      if (err.code === 'ERR_NETWORK') {
+        setError('Server connection failed. Please try again shortly.')
+      } else if (err.response?.status === 401) {
+        setError('Incorrect email or password.')
+      } else if (err.response?.status === 404) {
+        setError('Account not found. Please register first.')
+      } else {
+        setError(err.response?.data?.message || err.message || 'Login failed.')
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
-  return '';
-};
-
-export default function Login() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!email.trim()) newErrors.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Invalid email format';
-    if (!password) newErrors.password = 'Password is required';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-      const res = await api.post('/auth/login', { email: email.trim(), password });
-      const token = extractToken(res);
-      if (!token) throw new Error('Token not returned by backend');
-      localStorage.setItem('token', token);
-      if (rememberMe) {
-        localStorage.setItem('rememberEmail', email);
-      } else {
-        localStorage.removeItem('rememberEmail');
-      }
-      toast.success('Login successful');
-      navigate('/dashboard');
-    } catch (error) {
-      toast.error(getErrorMessage(error, 'Failed to login'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center px-4 py-12">
-      {/* Background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 h-80 w-80 bg-blue-500/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-80 w-80 bg-purple-500/20 rounded-full blur-3xl" />
-      </div>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 20,
+      fontFamily: "'Inter', sans-serif",
+    }}>
+      {/* Decorative background circles */}
+      <div style={{
+        position:'fixed', top:-100, right:-100,
+        width:400, height:400, borderRadius:'50%',
+        background:'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)',
+        pointerEvents:'none',
+      }}/>
+      <div style={{
+        position:'fixed', bottom:-150, left:-100,
+        width:500, height:500, borderRadius:'50%',
+        background:'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)',
+        pointerEvents:'none',
+      }}/>
 
-      {/* Form Container */}
-      <motion.div
-        initial={pageVariants.initial}
-        animate={pageVariants.enter}
-        className="relative w-full max-w-md"
-      >
-        <div className="rounded-3xl bg-white/95 backdrop-blur-xl p-8 shadow-2xl border border-white/20">
-          {/* Header */}
-          <motion.div variants={listVariants} initial="hidden" animate="show" className="mb-8">
-            <motion.div variants={itemVariants} className="flex items-center justify-center mb-6">
-              <div className="h-12 w-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                F
-              </div>
-            </motion.div>
-            <motion.h1 variants={itemVariants} className="text-3xl font-bold text-center text-slate-900">
-              Welcome Back
-            </motion.h1>
-            <motion.p variants={itemVariants} className="text-center text-slate-600 mt-2">
-              Sign in to your Finly account
-            </motion.p>
-          </motion.div>
+      <div style={{
+        background: 'rgba(255,255,255,0.97)',
+        borderRadius: 24,
+        padding: '40px 36px',
+        width: '100%',
+        maxWidth: 420,
+        boxShadow: '0 25px 60px rgba(0,0,0,0.4)',
+        position: 'relative',
+      }}>
 
-          {/* Form */}
-          <motion.form
-            onSubmit={handleSubmit}
-            variants={listVariants}
-            initial="hidden"
-            animate="show"
-            className="space-y-4"
-          >
-            {/* Email Input */}
-            <motion.div variants={itemVariants}>
-              <Input
-                label="Email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (errors.email) setErrors((p) => ({ ...p, email: '' }));
-                }}
-                error={errors.email}
-                icon={Mail}
-                required
-              />
-            </motion.div>
-
-            {/* Password Input */}
-            <motion.div variants={itemVariants}>
-              <div className="space-y-1.5">
-                <label className="block text-sm font-medium text-slate-900">
-                  Password
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <motion.input
-                    whileFocus={{ scale: 1.01 }}
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (errors.password) setErrors((p) => ({ ...p, password: '' }));
-                    }}
-                    className={`w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 pl-10 text-slate-900 placeholder-slate-400 transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20 ${
-                      errors.password ? 'border-red-500 focus:ring-red-500/20' : ''
-                    }`}
-                  />
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
-              </div>
-            </motion.div>
-
-            {/* Remember Me Checkbox */}
-            <motion.div variants={itemVariants} className="flex items-center">
-              <input
-                type="checkbox"
-                id="rememberMe"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-              />
-              <label htmlFor="rememberMe" className="ml-2 text-sm text-slate-600 cursor-pointer">
-                Remember me
-              </label>
-            </motion.div>
-
-            {/* Sign In Button */}
-            <motion.div variants={itemVariants}>
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
-                isLoading={loading}
-                disabled={loading}
-              >
-                Sign In
-              </Button>
-            </motion.div>
-          </motion.form>
-
-          {/* Divider */}
-          <motion.div variants={itemVariants} className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-slate-200" />
-            <span className="text-sm text-slate-500">Don't have an account?</span>
-            <div className="h-px flex-1 bg-slate-200" />
-          </motion.div>
-
-          {/* Sign Up Link */}
-          <motion.div variants={itemVariants}>
-            <Link to="/register">
-              <Button
-                type="button"
-                variant="secondary"
-                size="lg"
-                className="w-full"
-              >
-                Create Account
-              </Button>
-            </Link>
-          </motion.div>
+        {/* Logo */}
+        <div style={{textAlign:'center', marginBottom:28}}>
+          <div style={{
+            width:52, height:52, borderRadius:14,
+            background:'linear-gradient(135deg,#4f46e5,#7c3aed)',
+            display:'inline-flex', alignItems:'center', justifyContent:'center',
+            fontSize:22, marginBottom:16,
+            boxShadow:'0 8px 24px rgba(79,70,229,0.35)',
+          }}>⚡</div>
+          <h1 style={{
+            fontSize:24, fontWeight:700, color:'#0f172a',
+            fontFamily:"'Space Grotesk', sans-serif", margin:'0 0 6px',
+          }}>Welcome back</h1>
+          <p style={{fontSize:14, color:'#64748b', margin:0}}>
+            Sign in to your Finly account
+          </p>
         </div>
 
-        {/* Footer Text */}
-        <motion.p
-          variants={itemVariants}
-          className="text-center text-sm text-white/60 mt-6"
-        >
-          By signing in, you agree to our{' '}
-          <a href="#" className="underline hover:text-white/80">
+        <form onSubmit={handleLogin} noValidate>
+          {/* Email */}
+          <div style={{marginBottom:16}}>
+            <label style={{
+              display:'block', fontSize:13, fontWeight:500,
+              color:'#374151', marginBottom:6,
+            }}>
+              Email address
+            </label>
+            <div style={{position:'relative'}}>
+              <span style={{
+                position:'absolute', left:12, top:'50%', transform:'translateY(-50%)',
+                fontSize:16, pointerEvents:'none',
+              }}>✉️</span>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+                style={{
+                  width:'100%', height:46, paddingLeft:38, paddingRight:14,
+                  border:'1.5px solid #e2e8f0', borderRadius:10,
+                  fontSize:14, color:'#0f172a', background:'#f8fafc',
+                  outline:'none', transition:'all 0.2s',
+                  fontFamily:"'Inter',sans-serif",
+                  boxSizing:'border-box',
+                }}
+                onFocus={e => {
+                  e.target.style.borderColor='#4f46e5'
+                  e.target.style.boxShadow='0 0 0 3px rgba(79,70,229,0.12)'
+                  e.target.style.background='#fff'
+                }}
+                onBlur={e => {
+                  e.target.style.borderColor='#e2e8f0'
+                  e.target.style.boxShadow='none'
+                  e.target.style.background='#f8fafc'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div style={{marginBottom:16}}>
+            <label style={{
+              display:'block', fontSize:13, fontWeight:500,
+              color:'#374151', marginBottom:6,
+            }}>
+              Password
+            </label>
+            <div style={{position:'relative'}}>
+              <span style={{
+                position:'absolute', left:12, top:'50%', transform:'translateY(-50%)',
+                fontSize:16, pointerEvents:'none',
+              }}>🔒</span>
+              <input
+                type={showPass ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                required
+                style={{
+                  width:'100%', height:46, paddingLeft:38, paddingRight:46,
+                  border:'1.5px solid #e2e8f0', borderRadius:10,
+                  fontSize:14, color:'#0f172a', background:'#f8fafc',
+                  outline:'none', transition:'all 0.2s',
+                  fontFamily:"'Inter',sans-serif",
+                  boxSizing:'border-box',
+                }}
+                onFocus={e => {
+                  e.target.style.borderColor='#4f46e5'
+                  e.target.style.boxShadow='0 0 0 3px rgba(79,70,229,0.12)'
+                  e.target.style.background='#fff'
+                }}
+                onBlur={e => {
+                  e.target.style.borderColor='#e2e8f0'
+                  e.target.style.boxShadow='none'
+                  e.target.style.background='#f8fafc'
+                }}
+              />
+              <button type="button" onClick={() => setShowPass(!showPass)}
+                style={{
+                  position:'absolute', right:12, top:'50%', transform:'translateY(-50%)',
+                  background:'none', border:'none', cursor:'pointer',
+                  fontSize:16, color:'#94a3b8', padding:4,
+                }}>
+                {showPass ? '🙈' : '👁️'}
+              </button>
+            </div>
+          </div>
+
+          {/* Remember me */}
+          <div style={{
+            display:'flex', alignItems:'center', justifyContent:'space-between',
+            marginBottom:20,
+          }}>
+            <label style={{
+              display:'flex', alignItems:'center', gap:8,
+              fontSize:13, color:'#475569', cursor:'pointer',
+            }}>
+              <input type="checkbox" checked={remember}
+                onChange={e => setRemember(e.target.checked)}
+                style={{width:16,height:16,accentColor:'#4f46e5'}}
+              />
+              Remember me
+            </label>
+          </div>
+
+          {/* Error message */}
+          {error && (
+            <div style={{
+              background:'#fff1f2', border:'1px solid #fecdd3',
+              borderRadius:10, padding:'10px 14px',
+              fontSize:13, color:'#be123c',
+              display:'flex', alignItems:'flex-start', gap:8,
+              marginBottom:16,
+            }}>
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* SIGN IN BUTTON — ALWAYS VISIBLE */}
+          <button
+            type="submit"
+            disabled={loading || !email || !password}
+            style={{
+              width:'100%', height:48,
+              background: (loading || !email || !password)
+                ? '#c7d2fe'
+                : 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+              color:'#ffffff',
+              border:'none', borderRadius:12,
+              fontSize:15, fontWeight:600,
+              cursor:(loading || !email || !password) ? 'not-allowed' : 'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+              transition:'all 0.2s ease',
+              boxShadow: (loading || !email || !password)
+                ? 'none'
+                : '0 4px 14px rgba(79,70,229,0.4)',
+              fontFamily:"'Inter',sans-serif",
+              letterSpacing:'0.01em',
+            }}
+          >
+            {loading ? 'Signing in...' : 'Sign In →'}
+          </button>
+
+          {/* Terms note */}
+          <p style={{
+            fontSize:11, color:'#94a3b8', textAlign:'center',
+            marginTop:14, lineHeight:1.5,
+          }}>
+            By signing in you agree to our{' '}
+            <span
+              onClick={() => document.getElementById('terms-modal').style.display='flex'}
+              style={{color:'#4f46e5', cursor:'pointer', textDecoration:'underline'}}
+            >
+              Terms of Service
+            </span>{' '}
+            and{' '}
+            <span
+              onClick={() => document.getElementById('privacy-modal').style.display='flex'}
+              style={{color:'#4f46e5', cursor:'pointer', textDecoration:'underline'}}
+            >
+              Privacy Policy
+            </span>
+          </p>
+        </form>
+
+        {/* Register link */}
+        <div style={{
+          borderTop:'1px solid #f1f5f9', marginTop:20, paddingTop:20,
+          textAlign:'center',
+        }}>
+          <p style={{fontSize:14, color:'#64748b', margin:0}}>
+            Don't have an account?{' '}
+            <Link to="/register" style={{
+              color:'#4f46e5', fontWeight:600, textDecoration:'none',
+            }}>
+              Create account
+            </Link>
+          </p>
+        </div>
+      </div>
+
+      {/* TERMS OF SERVICE MODAL */}
+      <div id="terms-modal" style={{
+        display:'none', position:'fixed', inset:0,
+        background:'rgba(0,0,0,0.6)', zIndex:1000,
+        alignItems:'center', justifyContent:'center', padding:20,
+      }}
+        onClick={e => e.target.id==='terms-modal' &&
+          (document.getElementById('terms-modal').style.display='none')}
+      >
+        <div style={{
+          background:'#fff', borderRadius:20, padding:'32px',
+          maxWidth:520, width:'100%', maxHeight:'80vh', overflowY:'auto',
+          position:'relative',
+        }}>
+          <button onClick={() => document.getElementById('terms-modal').style.display='none'}
+            style={{
+              position:'absolute', top:16, right:16,
+              background:'#f1f5f9', border:'none', borderRadius:8,
+              width:32, height:32, cursor:'pointer', fontSize:16,
+            }}>✕</button>
+          <h2 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:20,marginBottom:6}}>
             Terms of Service
-          </a>
-        </motion.p>
-      </motion.div>
+          </h2>
+          <p style={{fontSize:12,color:'#94a3b8',marginBottom:20}}>
+            Effective date: March 2026
+          </p>
+          <div style={{fontSize:14,color:'#374151',lineHeight:1.8,
+            display:'flex',flexDirection:'column',gap:14}}>
+            <p><strong>1. Acceptance of Terms.</strong> By accessing or using Finly, you confirm that you are at least 18 years old and agree to be bound by these Terms of Service.</p>
+            <p><strong>2. Account Responsibility.</strong> You are responsible for maintaining the confidentiality of your login credentials. All activity under your account is your responsibility.</p>
+            <p><strong>3. Permitted Use.</strong> Finly is provided for personal financial tracking and management purposes only. You may not use it for illegal activities or fraud.</p>
+            <p><strong>4. Data Accuracy.</strong> You agree to provide accurate financial information. Finly does not verify the accuracy of transactions or balances you enter.</p>
+            <p><strong>5. Financial Advice Disclaimer.</strong> Finly is a budgeting and tracking tool only. Nothing constitutes financial, investment, or legal advice.</p>
+            <p><strong>6. Service Availability.</strong> We strive for 99% uptime but do not guarantee uninterrupted service.</p>
+            <p><strong>7. Intellectual Property.</strong> All content and technology in Finly is the intellectual property of the Finly team.</p>
+            <p><strong>8. Termination.</strong> We reserve the right to suspend or terminate accounts that violate these Terms.</p>
+            <p><strong>9. Limitation of Liability.</strong> Finly is not liable for any financial loss resulting from your use of the platform.</p>
+            <p><strong>10. Changes to Terms.</strong> We may update these Terms at any time. Continued use constitutes acceptance.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* PRIVACY POLICY MODAL */}
+      <div id="privacy-modal" style={{
+        display:'none', position:'fixed', inset:0,
+        background:'rgba(0,0,0,0.6)', zIndex:1000,
+        alignItems:'center', justifyContent:'center', padding:20,
+      }}
+        onClick={e => e.target.id==='privacy-modal' &&
+          (document.getElementById('privacy-modal').style.display='none')}
+      >
+        <div style={{
+          background:'#fff', borderRadius:20, padding:'32px',
+          maxWidth:520, width:'100%', maxHeight:'80vh', overflowY:'auto',
+          position:'relative',
+        }}>
+          <button onClick={() => document.getElementById('privacy-modal').style.display='none'}
+            style={{
+              position:'absolute', top:16, right:16,
+              background:'#f1f5f9', border:'none', borderRadius:8,
+              width:32, height:32, cursor:'pointer', fontSize:16,
+            }}>✕</button>
+          <h2 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:20,marginBottom:6}}>
+            Privacy Policy
+          </h2>
+          <p style={{fontSize:12,color:'#94a3b8',marginBottom:20}}>
+            Effective date: March 2026
+          </p>
+          <div style={{fontSize:14,color:'#374151',lineHeight:1.8,
+            display:'flex',flexDirection:'column',gap:14}}>
+            <p><strong>1. What We Collect.</strong> Finly collects your email address, password (encrypted), and financial data you enter.</p>
+            <p><strong>2. How We Use Your Data.</strong> Your data is used exclusively to provide personal finance tracking features.</p>
+            <p><strong>3. Data Storage.</strong> All data is stored on secure servers. Financial data is encrypted in transit using TLS/HTTPS.</p>
+            <p><strong>4. Data Sharing.</strong> We do not share, sell, or trade your information with any third parties.</p>
+            <p><strong>5. Cookies and Local Storage.</strong> Finly uses browser local storage to keep you logged in via JWT token.</p>
+            <p><strong>6. Data Retention.</strong> Your data is retained as long as your account is active.</p>
+            <p><strong>7. Your Rights.</strong> You have the right to access, correct, or delete your data at any time.</p>
+            <p><strong>8. Children's Privacy.</strong> Finly is not intended for use by anyone under 18 years of age.</p>
+            <p><strong>9. Security.</strong> We take reasonable measures to protect your data. Use a strong, unique password.</p>
+            <p><strong>10. Contact.</strong> For privacy-related questions, contact the Finly team.</p>
+          </div>
+        </div>
+      </div>
     </div>
-  );
+  )
 }
+
+export default Login
