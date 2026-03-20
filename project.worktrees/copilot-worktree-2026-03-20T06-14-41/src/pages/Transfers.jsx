@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import AppShell from '../components/Layout/AppShell';
 import TransferForm from '../components/Transfers/TransferForm';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
-import { getTransfers, createTransfer } from '../api/transfersApi';
+import { transfersApi } from '../api/transfersApi';
 import { useFinance } from '../context/FinanceContext';
 import { getErrorMessage, toArray } from '../utils/http';
 import { toReadableDate, formatMoney } from '../utils/format';
@@ -17,8 +17,8 @@ export default function Transfers() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await getTransfers();
-      setItems(toArray(data));
+      const data = await transfersApi.getAll();
+      setItems(toArray(data?.data || data));
     } catch (error) {
       toast.error(getErrorMessage(error, 'Failed to load transfers'));
     } finally {
@@ -31,7 +31,7 @@ export default function Transfers() {
   const submit = async (payload) => {
     setSubmitting(true);
     try {
-      await createTransfer(payload);
+      await transfersApi.create(payload);
       toast.success('Transfer completed');
       await Promise.all([load(), refreshAccounts()]);
     } catch (error) {

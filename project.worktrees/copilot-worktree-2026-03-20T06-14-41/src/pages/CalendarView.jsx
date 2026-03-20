@@ -4,8 +4,8 @@ import { toast } from 'react-toastify';
 import 'react-calendar/dist/Calendar.css';
 import AppShell from '../components/Layout/AppShell';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
-import { getExpenses } from '../api/expensesApi';
-import { getIncome } from '../api/incomeApi';
+import { expensesApi } from '../api/expensesApi';
+import { incomeApi } from '../api/incomeApi';
 import { getErrorMessage, toArray } from '../utils/http';
 import { formatMoney } from '../utils/format';
 
@@ -17,9 +17,9 @@ export default function CalendarView() {
   const load = async () => {
     setLoading(true);
     try {
-      const [expenses, income] = await Promise.all([getExpenses(), getIncome()]);
-      const exp = toArray(expenses).map((e) => ({ ...e, txType: 'expense' }));
-      const inc = toArray(income).map((i) => ({ ...i, txType: 'income' }));
+      const [expenses, income] = await Promise.all([expensesApi.getAll(), incomeApi.getAll()]);
+      const exp = toArray(expenses?.data || expenses).map((e) => ({ ...e, txType: 'expense' }));
+      const inc = toArray(income?.data || income).map((i) => ({ ...i, txType: 'income' }));
       setTransactions([...exp, ...inc]);
     } catch (error) {
       toast.error(getErrorMessage(error, 'Failed to load calendar data'));

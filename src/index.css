@@ -3,50 +3,118 @@
 @tailwind utilities;
 
 :root {
-  --navy: #0a1628;
-  --navy-800: #0f2040;
-  --royal: #1a3a6b;
-  --blue: #2563eb;
-  --blue-light: #eff6ff;
-  --green: #22c55e;
-  --green-bg: #f0fdf4;
-  --red: #ef4444;
-  --red-bg: #fff5f5;
+  --navy: #0f172a;
+  --navy-800: #1e293b;
+  --navy-700: #334155;
+  --blue: #3b82f6;
+  --blue-dark: #1d4ed8;
+  --blue-soft: #eff6ff;
+  --green: #10b981;
+  --green-soft: #ecfdf5;
+  --red: #f43f5e;
+  --red-soft: #fff1f2;
   --amber: #f59e0b;
-  --amber-bg: #fffbeb;
-  --ice: #f8fafc;
-  --border: rgba(0, 0, 0, 0.08);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --amber-soft: #fffbeb;
+  --purple: #8b5cf6;
+  --purple-soft: #f5f3ff;
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text-1: #0f172a;
+  --text-2: #475569;
+  --text-3: #94a3b8;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
-  margin: 0;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  background: var(--ice);
-  color: var(--navy);
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
+h1, h2, h3 {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+}
+
+/* Skeleton shimmer animation */
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 8px;
+  background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+  border-radius: var(--radius-sm);
 }
 
-.fade-page {
-  animation: fadeUp 0.25s ease-out;
-}
-
+/* Fade up animation */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
+.anim-fade-up {
+  animation: fadeUp 0.3s ease-out;
+}
+
+/* Pulse dot animation for open debts/notifications */
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.4);
+  }
+}
+
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--navy-700);
+}
+

@@ -5,7 +5,7 @@ import DebtList from '../components/Debts/DebtList';
 import AddDebtModal from '../components/Debts/AddDebtModal';
 import ConfirmDialog from '../components/shared/ConfirmDialog';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
-import { getDebts, createDebt, updateDebt, removeDebt } from '../api/debtsApi';
+import { debtsApi } from '../api/debtsApi';
 import { getErrorMessage, toArray } from '../utils/http';
 import { formatMoney } from '../utils/format';
 
@@ -20,8 +20,8 @@ export default function Debts() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await getDebts();
-      setItems(toArray(data));
+      const data = await debtsApi.getAll();
+      setItems(toArray(data?.data || data));
     } catch (error) {
       toast.error(getErrorMessage(error, 'Failed to load debts'));
     } finally {
@@ -34,7 +34,7 @@ export default function Debts() {
   const submit = async (payload) => {
     setSubmitting(true);
     try {
-      await createDebt(payload);
+      await debtsApi.create(payload);
       toast.success('Debt added');
       setOpen(false);
       await load();
@@ -48,7 +48,7 @@ export default function Debts() {
   const closeDebt = async (debt) => {
     setSubmitting(true);
     try {
-      await updateDebt(debt.id, { ...debt, status: 'CLOSED' });
+      await debtsApi.update(debt.id, { ...debt, status: 'CLOSED' });
       toast.success('Debt marked as closed');
       await load();
     } catch (error) {
@@ -62,7 +62,7 @@ export default function Debts() {
     if (!deleteItem) return;
     setSubmitting(true);
     try {
-      await removeDebt(deleteItem.id);
+      await debtsApi.delete(deleteItem.id);
       toast.success('Debt deleted');
       setDeleteItem(null);
       await load();

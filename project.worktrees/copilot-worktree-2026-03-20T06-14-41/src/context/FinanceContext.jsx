@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { getAccounts } from '../api/accountsApi';
+import { accountsApi } from '../api/accountsApi';
 import { convertToUZS } from '../utils/format';
 
 const FinanceContext = createContext(null);
@@ -17,8 +17,8 @@ export function FinanceProvider({ children }) {
 
     setAccountsLoading(true);
     try {
-      const data = await getAccounts();
-      setAccounts(Array.isArray(data) ? data : data?.content || []);
+      const data = await accountsApi.getAll();
+      setAccounts(Array.isArray(data?.data || data) ? (data?.data || data) : (data?.data || data)?.content || []);
     } finally {
       setAccountsLoading(false);
     }

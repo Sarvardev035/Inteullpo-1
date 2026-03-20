@@ -5,7 +5,7 @@ import LoadingSpinner from '../components/shared/LoadingSpinner';
 import TimePeriodFilter from '../components/Statistics/TimePeriodFilter';
 import IncomeVsExpense from '../components/Statistics/IncomeVsExpense';
 import ExpenseByCategory from '../components/Statistics/ExpenseByCategory';
-import { getExpenseStats, getIncomeStats, getCategoryBreakdown, getIncomeVsExpense } from '../api/statisticsApi';
+import { statsApi } from '../api/statisticsApi';
 import { getErrorMessage, toArray } from '../utils/http';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area, BarChart, Bar } from 'recharts';
 
@@ -21,15 +21,15 @@ export default function Statistics() {
     setLoading(true);
     try {
       const [exp, inc, cat, ivs] = await Promise.all([
-        getExpenseStats(period),
-        getIncomeStats(period),
-        getCategoryBreakdown(),
-        getIncomeVsExpense(period),
+        statsApi.expenses(period),
+        statsApi.income(period),
+        statsApi.breakdown(),
+        statsApi.vsIncome(period),
       ]);
-      setExpenseSeries(toArray(exp));
-      setIncomeSeries(toArray(inc));
-      setCategoryData(toArray(cat).map((c) => ({ name: c.category || c.name, value: Number(c.amount || c.value || 0) })));
-      setIncomeExpenseData(toArray(ivs).map((r, idx) => ({
+      setExpenseSeries(toArray(exp?.data || exp));
+      setIncomeSeries(toArray(inc?.data || inc));
+      setCategoryData(toArray(cat?.data || cat).map((c) => ({ name: c.category || c.name, value: Number(c.amount || c.value || 0) })));
+      setIncomeExpenseData(toArray(ivs?.data || ivs).map((r, idx) => ({
         label: r.label || r.period || r.date || `#${idx + 1}`,
         income: Number(r.income || 0),
         expense: Number(r.expense || 0),

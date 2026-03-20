@@ -6,7 +6,7 @@ import AddExpenseModal from '../components/Expenses/AddExpenseModal';
 import EditExpenseModal from '../components/Expenses/EditExpenseModal';
 import ConfirmDialog from '../components/shared/ConfirmDialog';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
-import { getExpenses, createExpense, updateExpense, removeExpense } from '../api/expensesApi';
+import { expensesApi } from '../api/expensesApi';
 import { useFinance } from '../context/FinanceContext';
 import { getErrorMessage, toArray } from '../utils/http';
 
@@ -22,8 +22,8 @@ export default function Expenses() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await getExpenses();
-      setItems(toArray(data));
+      const data = await expensesApi.getAll();
+      setItems(toArray(data?.data || data));
     } catch (error) {
       toast.error(getErrorMessage(error, 'Failed to load expenses'));
     } finally {
@@ -36,7 +36,7 @@ export default function Expenses() {
   const add = async (payload) => {
     setSubmitting(true);
     try {
-      await createExpense(payload);
+      await expensesApi.create(payload);
       toast.success('Expense added');
       setAddOpen(false);
       await Promise.all([load(), refreshAccounts()]);
@@ -51,7 +51,7 @@ export default function Expenses() {
     if (!editItem) return;
     setSubmitting(true);
     try {
-      await updateExpense(editItem.id, payload);
+      await expensesApi.update(editItem.id, payload);
       toast.success('Expense updated');
       setEditItem(null);
       await Promise.all([load(), refreshAccounts()]);
@@ -66,7 +66,7 @@ export default function Expenses() {
     if (!deleteItem) return;
     setSubmitting(true);
     try {
-      await removeExpense(deleteItem.id);
+      await expensesApi.delete(deleteItem.id);
       toast.success('Expense deleted');
       setDeleteItem(null);
       await Promise.all([load(), refreshAccounts()]);

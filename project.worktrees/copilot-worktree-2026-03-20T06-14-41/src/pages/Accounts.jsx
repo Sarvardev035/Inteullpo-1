@@ -6,7 +6,7 @@ import AccountCard from '../components/Accounts/AccountCard';
 import AddAccountModal from '../components/Accounts/AddAccountModal';
 import ConfirmDialog from '../components/shared/ConfirmDialog';
 import { useFinance } from '../context/FinanceContext';
-import { createAccount, updateAccount, removeAccount } from '../api/accountsApi';
+import { accountsApi } from '../api/accountsApi';
 import { formatMoney } from '../utils/format';
 import { getErrorMessage } from '../utils/http';
 
@@ -21,10 +21,10 @@ export default function Accounts() {
     setSubmitting(true);
     try {
       if (editData) {
-        await updateAccount(editData.id, payload);
+        await accountsApi.update(editData.id, payload);
         toast.success('Account updated');
       } else {
-        await createAccount(payload);
+        await accountsApi.create(payload);
         toast.success('Account created');
       }
       setModalOpen(false);
@@ -41,7 +41,7 @@ export default function Accounts() {
     if (!deleteData) return;
     setSubmitting(true);
     try {
-      await removeAccount(deleteData.id);
+      await accountsApi.delete(deleteData.id);
       toast.success('Account deleted');
       setDeleteData(null);
       await refreshAccounts();

@@ -1,6 +1,29 @@
 import api from './axios';
 
-export const getExpenses = async (params = {}) => (await api.get('/expenses', { params })).data;
-export const createExpense = async (payload) => (await api.post('/expenses', payload)).data;
-export const updateExpense = async (id, payload) => (await api.put(`/expenses/${id}`, payload)).data;
-export const removeExpense = async (id) => (await api.delete(`/expenses/${id}`)).data;
+export const expensesApi = {
+  getAll: (params) => api.get('/api/expenses', { params }),
+  create: (data) => api.post('/api/expenses', data),
+  update: (id, data) => api.put(`/api/expenses/${id}`, data),
+  delete: (id) => api.delete(`/api/expenses/${id}`),
+};
+
+// Backward compatibility
+export const getExpenses = async (params = {}) => {
+  const response = await expensesApi.getAll(params);
+  return response.data;
+};
+
+export const createExpense = async (payload) => {
+  const response = await expensesApi.create(payload);
+  return response.data;
+};
+
+export const updateExpense = async (id, payload) => {
+  const response = await expensesApi.update(id, payload);
+  return response.data;
+};
+
+export const removeExpense = async (id) => {
+  const response = await expensesApi.delete(id);
+  return response.data;
+};

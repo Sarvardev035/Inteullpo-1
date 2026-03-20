@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { getAccounts } from '../api/accountsApi';
-import { convertToUZS } from '../utils/format';
+import { accountsApi } from '../api/accountsApi';
 
 const FinanceContext = createContext(null);
 
@@ -17,8 +16,12 @@ export function FinanceProvider({ children }) {
 
     setAccountsLoading(true);
     try {
-      const data = await getAccounts();
-      setAccounts(Array.isArray(data) ? data : data?.content || []);
+      const response = await accountsApi.getAll();
+      const data = Array.isArray(response.data) ? response.data : response.data?.content || [];
+      setAccounts(data);
+    } catch (err) {
+      console.error('Failed to refresh accounts:', err);
+      setAccounts([]);
     } finally {
       setAccountsLoading(false);
     }
@@ -29,11 +32,8 @@ export function FinanceProvider({ children }) {
   }, [refreshAccounts]);
 
   const totals = useMemo(() => {
-    const totalBalanceUZS = accounts.reduce(
-      (sum, acc) => sum + convertToUZS(acc.balance, acc.currency),
-      0
-    );
-    return { totalBalanceUZS };
+    const totalBalance = accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
+    return { totalBalance };
   }, [accounts]);
 
   const value = useMemo(

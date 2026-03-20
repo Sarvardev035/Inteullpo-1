@@ -5,7 +5,7 @@ import IncomeList from '../components/Income/IncomeList';
 import AddIncomeModal from '../components/Income/AddIncomeModal';
 import ConfirmDialog from '../components/shared/ConfirmDialog';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
-import { getIncome, createIncome, updateIncome, removeIncome } from '../api/incomeApi';
+import { incomeApi } from '../api/incomeApi';
 import { useFinance } from '../context/FinanceContext';
 import { getErrorMessage, toArray } from '../utils/http';
 
@@ -21,8 +21,8 @@ export default function Income() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await getIncome();
-      setItems(toArray(data));
+      const data = await incomeApi.getAll();
+      setItems(toArray(data?.data || data));
     } catch (error) {
       toast.error(getErrorMessage(error, 'Failed to load income'));
     } finally {
@@ -36,10 +36,10 @@ export default function Income() {
     setSubmitting(true);
     try {
       if (editData) {
-        await updateIncome(editData.id, payload);
+        await incomeApi.update(editData.id, payload);
         toast.success('Income updated');
       } else {
-        await createIncome(payload);
+        await incomeApi.create(payload);
         toast.success('Income added');
       }
       setModalOpen(false);
@@ -56,7 +56,7 @@ export default function Income() {
     if (!deleteItem) return;
     setSubmitting(true);
     try {
-      await removeIncome(deleteItem.id);
+      await incomeApi.delete(deleteItem.id);
       toast.success('Income deleted');
       setDeleteItem(null);
       await Promise.all([load(), refreshAccounts()]);

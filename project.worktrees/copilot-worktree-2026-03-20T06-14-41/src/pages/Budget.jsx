@@ -4,8 +4,8 @@ import AppShell from '../components/Layout/AppShell';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import BudgetOverview from '../components/Budget/BudgetOverview';
 import CategoryLimitCard from '../components/Budget/CategoryLimitCard';
-import { getBudget, setBudget, getBudgetCategories, setBudgetCategory } from '../api/budgetApi';
-import { getIncome } from '../api/incomeApi';
+import { budgetApi } from '../api/budgetApi';
+import { incomeApi } from '../api/incomeApi';
 import { getErrorMessage, toArray } from '../utils/http';
 import { EXPENSE_CATEGORIES } from '../utils/constants';
 
@@ -20,14 +20,14 @@ export default function Budget() {
   const load = async () => {
     setLoading(true);
     try {
-      const [budget, categories, income] = await Promise.all([getBudget(), getBudgetCategories(), getIncome()]);
-      const t = Number(budget?.target || budget?.incomeTarget || 0);
+      const [budget, categories, income] = await Promise.all([budgetApi.get(), budgetApi.getCategories(), incomeApi.getAll()]);
+      const t = Number((budget?.data || budget)?.target || (budget?.data || budget)?.incomeTarget || 0);
       setTarget(t);
       setTargetInput(String(t || ''));
-      const incomeSum = toArray(income).reduce((s, i) => s + Number(i.amount || 0), 0);
+      const incomeSum = toArray(income?.data || income).reduce((s, i) => s + Number(i.amount || 0), 0);
       setActualIncome(incomeSum);
 
-      const limitRows = toArray(categories).map((x) => ({
+      const limitRows = toArray(categories?.data || categories).map((x) => ({
         category: x.category,
         limitAmount: Number(x.limitAmount || x.limit || 0),
         spentAmount: Number(x.spentAmount || x.spent || x.actual || 0),
@@ -50,7 +50,7 @@ export default function Budget() {
   const saveTarget = async (e) => {
     e.preventDefault();
     try {
-      await setBudget({ target: Number(targetInput) });
+      await budgetApi.set({ target: Number(targetInput) });
       toast.success('Budget target updated');
       await load();
     } catch (error) {
@@ -61,7 +61,7 @@ export default function Budget() {
   const saveCategory = async (e) => {
     e.preventDefault();
     try {
-      await setBudgetCategory({ category: catForm.category, limitAmount: Number(catForm.limitAmount) });
+      await budgetApi.setCategory({ category: catForm.category, limitAmount: Number(catForm.limitAmount) });
       toast.success('Category limit updated');
       setCatForm((p) => ({ ...p, limitAmount: '' }));
       await load();

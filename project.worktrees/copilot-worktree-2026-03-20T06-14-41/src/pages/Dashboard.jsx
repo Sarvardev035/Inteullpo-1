@@ -5,10 +5,10 @@ import { toast } from 'react-toastify';
 import AppShell from '../components/Layout/AppShell';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import { useFinance } from '../context/FinanceContext';
-import { getIncome } from '../api/incomeApi';
-import { getExpenses } from '../api/expensesApi';
-import { getDebts } from '../api/debtsApi';
-import { getBudget, getBudgetCategories } from '../api/budgetApi';
+import { incomeApi } from '../api/incomeApi';
+import { expensesApi } from '../api/expensesApi';
+import { debtsApi } from '../api/debtsApi';
+import { budgetApi } from '../api/budgetApi';
 import { getErrorMessage, toArray } from '../utils/http';
 import { formatMoney } from '../utils/format';
 import { format } from 'date-fns';
@@ -27,13 +27,13 @@ export default function Dashboard() {
       setLoading(true);
       try {
         const [inc, exp, d, b, c] = await Promise.all([
-          getIncome(), getExpenses(), getDebts(), getBudget(), getBudgetCategories(),
+          incomeApi.getAll(), expensesApi.getAll(), debtsApi.getAll(), budgetApi.get(), budgetApi.getCategories(),
         ]);
-        setIncome(toArray(inc));
-        setExpenses(toArray(exp));
-        setDebts(toArray(d));
-        setBudgetState(b || { target: 0 });
-        setCategories(toArray(c));
+        setIncome(toArray(inc?.data || inc));
+        setExpenses(toArray(exp?.data || exp));
+        setDebts(toArray(d?.data || d));
+        setBudgetState((b?.data || b) || { target: 0 });
+        setCategories(toArray(c?.data || c));
       } catch (error) {
         toast.error(getErrorMessage(error, 'Failed to load dashboard'));
       } finally {
