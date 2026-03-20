@@ -1,11 +1,8 @@
 import axios from 'axios'
 
-// In production, use same-origin and rely on Vercel rewrites to avoid browser CORS.
-// In local dev, allow override via env or fall back to backend URL.
-const isDev = import.meta.env.DEV
-const API_BASE_URL = isDev
-  ? (import.meta.env.VITE_API_BASE_URL || 'https://finly.uyqidir.uz')
-  : ''
+// Always use the backend URL directly to avoid CORS issues with Vercel rewrites
+// Both production and development use the real backend domain
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://finly.uyqidir.uz'
 const API_TIMEOUT = import.meta.env.VITE_API_TIMEOUT || 10000
 
 const api = axios.create({
