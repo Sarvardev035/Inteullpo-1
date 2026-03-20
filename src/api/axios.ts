@@ -1,9 +1,12 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://finly.uyqidir.uz/api';
+const BACKEND_DISABLED_MESSAGE = 'Backend is disabled for this old app.';
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  // Hard-disable network calls in old repo so it never connects to backend.
+  adapter: async (config) => {
+    throw new AxiosError(BACKEND_DISABLED_MESSAGE, 'ERR_BACKEND_DISABLED', config);
+  },
 });
 
 api.interceptors.request.use(
