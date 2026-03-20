@@ -4,5 +4,12 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/.*",
+      "destination": "https://inteullpo.online",
+      "permanent": true
+    }
   ]
 }
