@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import AppShell from './components/Layout/AppShell';
 import ProtectedRoute from './components/Layout/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
@@ -18,15 +19,23 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/accounts" element={<ProtectedRoute><Accounts /></ProtectedRoute>} />
-      <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
-      <Route path="/income" element={<ProtectedRoute><Income /></ProtectedRoute>} />
-      <Route path="/transfers" element={<ProtectedRoute><Transfers /></ProtectedRoute>} />
-      <Route path="/debts" element={<ProtectedRoute><Debts /></ProtectedRoute>} />
-      <Route path="/budget" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
-      <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
-      <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppShell />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/accounts" element={<Accounts />} />
+        <Route path="/expenses" element={<Expenses />} />
+        <Route path="/income" element={<Income />} />
+        <Route path="/transfers" element={<Transfers />} />
+        <Route path="/debts" element={<Debts />} />
+        <Route path="/budget" element={<Budget />} />
+        <Route path="/statistics" element={<Statistics />} />
+        <Route path="/calendar" element={<CalendarView />} />
+      </Route>
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
