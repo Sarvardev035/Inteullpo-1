@@ -4,6 +4,31 @@ import { toast } from 'react-toastify';
 import api from '../../api/axios';
 import { getErrorMessage } from '../../utils/http';
 
+const extractToken = (response) => {
+  const data = response?.data;
+  const authHeader =
+    response?.headers?.authorization || response?.headers?.Authorization;
+
+  if (typeof data === 'string') return data;
+  if (data?.token) return data.token;
+  if (data?.accessToken) return data.accessToken;
+  if (data?.access_token) return data.access_token;
+  if (data?.jwt) return data.jwt;
+  if (data?.data?.token) return data.data.token;
+  if (data?.data?.accessToken) return data.data.accessToken;
+  if (data?.data?.access_token) return data.data.access_token;
+  if (data?.result?.token) return data.result.token;
+  if (data?.result?.accessToken) return data.result.accessToken;
+
+  if (typeof authHeader === 'string') {
+    return authHeader.startsWith('Bearer ')
+      ? authHeader.slice('Bearer '.length).trim()
+      : authHeader.trim();
+  }
+
+  return '';
+};
+
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -15,7 +40,7 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await api.post('/auth/login', { email: email.trim(), password });
-      const token = res?.data?.token || res?.data?.accessToken;
+      const token = extractToken(res);
       if (!token) throw new Error('Token not returned by backend');
       localStorage.setItem('token', token);
       toast.success('Login successful');
