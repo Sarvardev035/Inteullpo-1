@@ -1,12 +1,11 @@
 import axios from 'axios'
 
-// Use backend URL directly in dev. In production, use same-origin + Vercel rewrite
-// to avoid browser CORS issues on endpoints with missing CORS headers.
-const BACKEND_URL =
-  import.meta.env.VITE_API_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  'https://finly.uyqidir.uz'
-const API_BASE_URL = import.meta.env.DEV ? BACKEND_URL : ''
+// IMPORTANT: On Vercel dashboard → Project Settings → Environment Variables
+// Add VITE_API_BASE_URL = https://finly.uyqidir.uz
+// Then redeploy. This is required because client-side Vite env vars need the VITE_ prefix.
+
+// Use environment variable for API base URL, fallback to production URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://finly.uyqidir.uz'
 const API_TIMEOUT = import.meta.env.VITE_API_TIMEOUT || 10000
 
 const api = axios.create({
