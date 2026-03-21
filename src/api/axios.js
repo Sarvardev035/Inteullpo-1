@@ -4,8 +4,10 @@ import axios from 'axios'
 // Add VITE_API_BASE_URL = https://finly.uyqidir.uz
 // Then redeploy. This is required because client-side Vite env vars need the VITE_ prefix.
 
-// Use environment variable for API base URL, fallback to production URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://finly.uyqidir.uz'
+// Use environment variable for API base URL
+// In development: use '' so Vite proxy handles /api/* requests
+// In production: use full backend URL from env var
+const API_BASE_URL = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_BASE_URL || 'https://finly.uyqidir.uz')
 const API_TIMEOUT = import.meta.env.VITE_API_TIMEOUT || 10000
 
 const api = axios.create({
